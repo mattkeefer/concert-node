@@ -1,0 +1,14 @@
+{
+  "name": "concert-node",
+  "version": "1.0.0",
+  "dependencies": {
+    "axios": "^1.6.8",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "mongodb": "^6.6.1",
+    "mongoose": "^8.3.3"
+  },
+  "type": "module"
+}
