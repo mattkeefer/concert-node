@@ -1,100 +1,118 @@
-import * as dao from "./dao.js";
+import userDao from "./dao.js";
 
 export default function UserRoutes(app) {
+
+  // Create a new user
   const createUser = async (req, res) => {
-    const user = await dao.createUser(req.body);
-    res.json(user);
-  };
-
-  const deleteUser = async (req, res) => {
-    const {userId} = req.params;
-    const user = await dao.findUserById(userId);
-
-    // try {
-    //   await Promise.all(user.following.map(
-    //       async (id) => await socialDao.userUnfollowsUser(userId, id)));
-    //   await Promise.all(user.likedTracks.map(
-    //       async (id) => await likesDao.userUnlikesTrack(userId, id)));
-    //   await Promise.all(user.followers.map(
-    //       async (id) => await socialDao.userUnfollowsUser(id, userId)));
-    // } catch (e) {
-    //   console.warn(`Error while deleting user and relationships: ${e}`);
-    // }
-
-    const status = await dao.deleteUser(userId);
-    res.json(status);
-  };
-
-  const findAllUsers = async (req, res) => {
-    const {role} = req.query;
-    if (role) {
-      const users = await dao.findUsersByRole(role);
-      res.json(users);
-      return;
+    try {
+      const user = await userDao.createUser(req.body);
+      res.status(201).json(user);
+    } catch (err) {
+      res.status(400).json({error: err.message});
     }
-    const users = await dao.findAllUsers();
-    res.json(users);
   };
 
-  const findUserById = async (req, res) => {
-    const {userId} = req.params;
-    const user = await dao.findUserById(userId);
-    res.json(user);
+  // Get a user by ID
+  const getUserById = async (req, res) => {
+    try {
+      const user = await userDao.findUserById(req.params.id);
+      if (!user) {
+        return res.status(404).json({error: 'User not found'});
+      }
+      res.json(user);
+    } catch (err) {
+      res.status(500).json({error: err.message});
+    }
   };
 
+  // Get a user by username
+  const getUserByUsername = async (req, res) => {
+    try {
+      const user = await userDao.findUserByUsername(req.params.username);
+      if (!user) {
+        return res.status(404).json({error: 'User not found'});
+      }
+      res.json(user);
+    } catch (err) {
+      res.status(500).json({error: err.message});
+    }
+  };
+
+  // Update a user
   const updateUser = async (req, res) => {
-    const {userId} = req.params;
-    const status = await dao.updateUser(userId, req.body);
-    const updatedUser = await dao.findUserById(userId);
-    req.session.currentUser = updatedUser;
-    res.json(updatedUser);
+    try {
+      const updatedUser = await userDao.updateUser(req.params.id, req.body);
+      if (!updatedUser) {
+        return res.status(404).json({error: 'User not found'});
+      }
+      res.json(updatedUser);
+    } catch (err) {
+      res.status(400).json({error: err.message});
+    }
   };
 
+  // Save a concert for a user
+  const saveConcert = async (req, res) => {
+    try {
+      const updatedUser = await userDao.saveConcert(req.params.id,
+          req.params.concertId);
+      if (!updatedUser) {
+        return res.status(404).json({error: 'User not found'});
+      }
+      res.json(updatedUser);
+    } catch (err) {
+      res.status(500).json({error: err.message});
+    }
+  };
+
+  // Follow a user
+  const followUser = async (req, res) => {
+    try {
+      await userDao.followUser(req.params.id, req.params.targetUserId);
+      res.status(204).send(); // No content
+    } catch (err) {
+      res.status(500).json({error: err.message});
+    }
+  };
+
+  // Unfollow a user
+  const unfollowUser = async (req, res) => {
+    try {
+      await userDao.unfollowUser(req.params.id, req.params.targetUserId);
+      res.status(204).send(); // No content
+    } catch (err) {
+      res.status(500).json({error: err.message});
+    }
+  };
+
+  // Register a new user
   const register = async (req, res) => {
-    const user = await dao.findUserByUsername(req.body.username);
-    if (user) {
-      res.status(400).json({message: "Username already taken"});
-      return;
+    try {
+      const newUser = await userDao.registerUser(req.body);
+      res.status(201).json(
+          {message: 'User registered successfully', user: newUser});
+    } catch (err) {
+      res.status(400).json({error: err.message});
     }
-    const currentUser = await dao.createUser(req.body);
-    req.session.currentUser = currentUser;
-    res.json(currentUser);
   };
 
+  // Login a user
   const login = async (req, res) => {
-    const {username, password} = req.body;
-    const currentUser = await dao.findUserByCredentials(username, password);
-    if (currentUser) {
-      req.session.currentUser = currentUser;
-      res.send(currentUser);
-    } else {
-      res.sendStatus(401);
+    try {
+      const {token, user} = await userDao.loginUser(req.body);
+      res.status(200).json({message: 'Login successful', token, user});
+    } catch (err) {
+      res.status(400).json({error: err.message});
     }
   };
 
-  const logout = (req, res) => {
-    req.session.destroy();
-    res.sendStatus(200);
-  };
-
-  const profile = async (req, res) => {
-    const {userId} = req.params;
-    const currentUser = req.session.currentUser;
-    if (!currentUser) {
-      res.sendStatus(401);
-      return;
-    }
-    const user = await dao.findUserById(userId);
-    res.json(user);
-  };
-
-  app.post("/api/users", createUser);
-  app.get("/api/users", findAllUsers);
-  app.get("/api/users/:userId", findUserById);
-  app.put("/api/users/:userId", updateUser);
-  app.delete("/api/users/:userId", deleteUser);
-  app.post("/api/users/register", register);
-  app.post("/api/users/login", login);
-  app.post("/api/users/logout", logout);
-  app.post("/api/users/profile/:userId", profile);
+  app.post('/users', createUser);
+  app.get('/users/:id', getUserById);
+  app.get('/users/username/:username', getUserByUsername);
+  app.put('/users/:id', updateUser);
+  app.post('/users/:id/save-concert/:concertId', saveConcert);
+  app.post('/users/:id/follow/:targetUserId', followUser);
+  app.post('/users/:id/unfollow/:targetUserId', unfollowUser);
+  app.post('/users/register', register);
+  app.post('/users/login', login);
 }

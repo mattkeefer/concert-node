@@ -1,20 +1,54 @@
-import model from "./model.js";
+import Concert from './schema.js';
 
-export const createConcert = (concert) => {
-  delete concert._id;
-  return model.create(concert);
+const concertDao = {
+  // Create a new concert
+  createConcert: async (concertData) => {
+    const concert = new Concert(concertData);
+    return await concert.save();
+  },
+
+  // Find a concert by its ID
+  findConcertById: async (id) => {
+    return Concert.findById(id);
+  },
+
+  // Update a concert by its ID
+  updateConcert: async (id, updatedData) => {
+    return Concert.findByIdAndUpdate(id, updatedData, {new: true});
+  },
+
+  // Delete a concert by its ID
+  deleteConcert: async (id) => {
+    return Concert.findByIdAndDelete(id);
+  },
+
+  // Find concerts based on a search query
+  findConcertsByQuery: async (query) => {
+    const {artist, venue, city, startDate, endDate} = query;
+
+    // Build dynamic query
+    const searchCriteria = {};
+    if (artist) {
+      searchCriteria.artist = {$regex: artist, $options: 'i'};
+    }
+    if (venue) {
+      searchCriteria.venue = {$regex: venue, $options: 'i'};
+    }
+    if (city) {
+      searchCriteria.city = {$regex: city, $options: 'i'};
+    }
+    if (startDate || endDate) {
+      searchCriteria.date = {};
+      if (startDate) {
+        searchCriteria.date.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        searchCriteria.date.$lte = new Date(endDate);
+      }
+    }
+
+    return Concert.find(searchCriteria);
+  },
 }
-export const findAllConcerts = () => model.find();
-export const findConcertById = (concertId) => model.findById(concertId);
-export const findConcertByIdentifier = (identifier) => model.findOne(
-    {identifier: identifier});
-export const findConcertsByArtist = (artist) => model.find()
-export const updateConcertById = (concertId, concert) => model.updateOne(
-    {_id: concertId}, {$set: concert});
-export const updateConcertByIdentifier = (identifier,
-    concert) => model.updateOne(
-    {identifier: identifier}, {$set: concert});
-export const deleteConcertById = (concertId) => model.deleteOne(
-    {_id: concertId});
-export const deleteConcertByIdentifier = (identifier) => model.deleteOne(
-    {identifier: identifier});
+
+export default concertDao;

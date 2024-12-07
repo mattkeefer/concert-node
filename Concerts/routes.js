@@ -1,50 +1,72 @@
-import * as dao from "./dao.js";
+import concertDao from "./dao.js";
 
 export default function ConcertRoutes(app) {
+
+  // Create a new concert
   const createConcert = async (req, res) => {
-    const concert = await dao.createConcert(req.body);
-    res.json(concert);
-  }
+    try {
+      const concert = await concertDao.createConcert(req.body);
+      res.status(201).json(concert);
+    } catch (err) {
+      res.status(400).json({error: err.message});
+    }
+  };
 
-  const deleteConcert = async (req, res) => {
-    const {source, id} = req.params;
-    const status = await dao.deleteConcertByIdentifier(source + ":" + id);
-    res.json(status);
-  }
+  // Get a concert by ID
+  const getConcertById = async (req, res) => {
+    try {
+      const concert = await concertDao.findConcertById(req.params.id);
+      if (!concert) {
+        return res.status(404).json({error: 'Concert not found'});
+      }
+      res.json(concert);
+    } catch (err) {
+      res.status(500).json({error: err.message});
+    }
+  };
 
-  const findAllConcerts = async (req, res) => {
-    const concerts = await dao.findAllConcerts();
-    res.json(concerts);
-  }
-
-  const findConcertByIdentifier = async (req, res) => {
-    const {source, id} = req.params;
-    const concert = await dao.findConcertByIdentifier(source + ":" + id);
-    res.json(concert);
-  }
-
-  const findConcertsByIds = async (req, res) => {
-    const cids = req.body;
-    const concerts = await Promise.all(
-        cids.map(cid => dao.findConcertById(cid)));
-    res.json(concerts);
-  }
-
+  // Update a concert
   const updateConcert = async (req, res) => {
-    const {concertId} = req.params;
-    const status = await dao.updateConcertById(concertId, req.body);
-    const updatedConcert = await dao.findConcertById(concertId);
-    res.json(updatedConcert);
-  }
+    try {
+      const updatedConcert = await concertDao.updateConcert(req.params.id,
+          req.body);
+      if (!updatedConcert) {
+        return res.status(404).json(
+            {error: 'Concert not found'});
+      }
+      res.json(updatedConcert);
+    } catch (err) {
+      res.status(400).json({error: err.message});
+    }
+  };
 
-  const searchConcert = async (req, res) => {
-    const
-  }
+  // Delete a concert
+  const deleteConcert = async (req, res) => {
+    try {
+      const deletedConcert = await concertDao.deleteConcert(req.params.id);
+      if (!deletedConcert) {
+        return res.status(404).json(
+            {error: 'Concert not found'});
+      }
+      res.status(204).send(); // No content
+    } catch (err) {
+      res.status(500).json({error: err.message});
+    }
+  };
 
-  app.get('/api/concerts', findAllConcerts);
-  app.post('/api/concerts', createConcert);
-  app.post('/api/concerts/ids', findConcertsByIds);
-  app.get('/api/concerts/:source/:id', findConcertByIdentifier);
-  app.put('/api/concerts/:concertId', updateConcert);
-  app.delete('/api/concerts/:source/:id', deleteConcert);
+  // Search for concerts
+  const searchConcerts = async (req, res) => {
+    try {
+      const concerts = await concertDao.findConcertsByQuery(req.query);
+      res.json(concerts);
+    } catch (err) {
+      res.status(500).json({error: err.message});
+    }
+  };
+
+  app.post('/concerts', createConcert);
+  app.get('/concerts/:id', getConcertById);
+  app.put('/concerts/:id', updateConcert);
+  app.delete('/concerts/:id', deleteConcert);
+  app.get('/concerts', searchConcerts); // Search concerts using query parameters
 }

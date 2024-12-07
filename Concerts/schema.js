@@ -1,106 +1,36 @@
 import mongoose from "mongoose";
 
-const concertSchema = new mongoose.Schema(
+const ConcertSchema = new mongoose.Schema(
     {
-      id: String,
-      name: String,
-      description: String,
-      // additionalInfo: String,
-      type: String,
-      // distance: Number,
-      // units: String,
-      // location: {
-      //   latitude: Number,
-      //   longitude: Number,
-      // },
-      locale: String,
-      url: String,
-      images: [{
-        url: String,
-        ratio: String, // 16_9, 3_2, 4_3
-        width: Number,
-        height: Number,
-        fallback: Boolean,
-      }],
-      dates: {
-        start: {
-          localDate: String,
-          localTime: String,
-          dateTime: String,
-          dateTBD: Boolean,
-          dateTBA: Boolean,
-          timeTBA: Boolean,
-          noSpecificTime: Boolean,
-        },
-        end: {
-          localDate: String,
-          localTime: String,
-          dateTime: String,
-          approximate: Boolean,
-          noSpecificTime: Boolean,
-        },
-        // access: {
-        //   startDateTime: String,
-        //   startApproximate: Boolean,
-        //   endDateTime: String,
-        //   endApproximate: Boolean,
-        // },
-        timezone: String,
-        // status: {
-        //   code: String, // onsale, offsale, canceled, postponed, rescheduled
-        // },
-        spanMultipleDays: Boolean,
+      title: {type: String, required: true}, // Concert name or title
+      artist: {type: String, required: true}, // Artist or band name
+      venue: {
+        name: {type: String, required: true},
+        city: {type: String, required: true},
+        state: {type: String},
+        country: {type: String, required: true},
+        address: {type: String},
+        latitude: {type: Number},
+        longitude: {type: Number},
       },
-      // sales: {
-      //   public: {
-      //     startDateTime: String,
-      //     endDateTime: String,
-      //     startTBD: Boolean,
-      //   },
-      //   presales: [{
-      //     name: String,
-      //     description: String,
-      //     url: String,
-      //     startDateTime: String,
-      //     endDateTime: String,
-      //   }],
-      // },
-      // info: String,
-      // pleaseNote: String,
-      priceRanges: [{
-        type: String, // standard
-        currency: String,
-        min: Number,
-        max: Number,
-      }],
-      // accessibility: {
-      //   info: String,
-      // },
-      classifications: [{
-        primary: Boolean,
-        segment: {
-          id: String,
-          name: String,
+      date: {type: Date, required: true}, // Concert date and time
+      ticketInfo: {
+        url: {type: String}, // Link to ticket purchasing
+        priceRange: {
+          min: {type: Number},
+          max: {type: Number},
+          currency: {type: String},
         },
-        genre: {
-          id: String,
-          name: String,
-        },
-        subGenre: {
-          id: String,
-          name: String,
-        },
-      }],
-      interestedUsers: [{
-        ref: "Users",
-        type: mongoose.Schema.Types.ObjectId,
-      }],
-      attendingUsers: [{
-        ref: "Users",
-        type: mongoose.Schema.Types.ObjectId,
-      }],
+      },
+      setlist: [{type: String}], // List of songs performed (for past concerts)
+      source: {
+        type: String,
+        enum: ['Ticketmaster', 'Setlist.fm'],
+        required: true,
+      }, // API source
+      tags: [{type: String}], // User-defined tags for sharing/discovery
+      createdAt: {type: Date, default: Date.now}, // Timestamp for creation
     },
-    {collection: "concerts"}
 );
 
-export default concertSchema;
+export default mongoose.model('Concert', ConcertSchema);

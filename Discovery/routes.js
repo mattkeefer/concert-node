@@ -4,36 +4,38 @@ import axios from "axios";
 export default function DiscoveryRoutes(app) {
   const API_KEY = process.env.DISCOVERY_API_KEY;
   const EVENTS_URL = "https://app.ticketmaster.com/discovery/v2/events.json";
-  const EVENT_URL = "https://app.ticketmaster.com/discovery/v2/events";
-  const ATTRACTIONS_URL = "https://app.ticketmaster.com/discovery/v2/attractions.json";
-  const ATTRACTION_URL = "https://app.ticketmaster.com/discovery/v2/attractions";
 
   const getEvents = async (req, res) => {
-    const params = req.body;
-    const classificationName = "music";
+    const params = {
+      classificationName: 'music',
+      apikey: API_KEY,
+      ...req.query
+    };
     try {
       const events = await axios.get(
-          `${EVENTS_URL}?classificationName=${classificationName}&apikey=${API_KEY}`,
-          {params: params});
-      res.send(events.data);
-    } catch (e) {
-      console.error(e);
-      res.sendStatus(500);
+          `${EVENTS_URL}`, {params});
+      res.json(events.data);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({error: 'Failed to fetch data from Discovery API'});
     }
   }
 
   const getAttractions = async (req, res) => {
-    const params = req.body;
+    const params = {
+      apikey: API_KEY,
+      ...req.query
+    };
     try {
-      const events = await axios.get(`${ATTRACTIONS_URL}?apikey=${API_KEY}`,
-          {params: params});
-      res.send(events.data);
-    } catch (e) {
-      console.error(e);
-      res.sendStatus(500);
+      const events = await axios.get(`${ATTRACTIONS_URL}`,
+          {params});
+      res.json(events.data);
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({error: 'Failed to fetch data from Discovery API'});
     }
   }
 
-  app.get('/api/discovery/events', getEvents);
-  app.get('/api/discovery/attractions', getAttractions);
+  app.get('/discovery/events', getEvents);
+  app.get('/discovery/attractions', getAttractions);
 }
