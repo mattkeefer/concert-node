@@ -20,7 +20,11 @@ const userSchema = new mongoose.Schema(
         ref: "Users",
         type: mongoose.Schema.Types.ObjectId,
       }],
-      concerts: [{
+      interested: [{
+        ref: "Concerts",
+        type: mongoose.Schema.Types.ObjectId,
+      }],
+      attending: [{
         ref: "Concerts",
         type: mongoose.Schema.Types.ObjectId,
       }],
