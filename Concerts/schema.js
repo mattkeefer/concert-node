@@ -3,7 +3,10 @@ import mongoose from "mongoose";
 const ConcertSchema = new mongoose.Schema(
     {
       title: {type: String, required: true}, // Concert name or title
-      artist: {type: String, required: true}, // Artist or band name
+      artists: [{
+        name: {type: String, required: true},
+        image: String,
+      }], // Artists or bands performing
       venue: {
         name: {type: String, required: true},
         city: {type: String, required: true},
@@ -13,7 +16,9 @@ const ConcertSchema = new mongoose.Schema(
         latitude: {type: Number},
         longitude: {type: Number},
       },
-      date: {type: Date, required: true}, // Concert date and time
+      image: String,
+      startDate: {type: Date, required: true}, // Concert start date and time
+      endDate: {type: Date}, // Concert end date and time
       ticketInfo: {
         url: {type: String}, // Link to ticket purchasing
         priceRange: {

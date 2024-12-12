@@ -28,23 +28,23 @@ const concertDao = {
 
     // Build dynamic query
     const searchCriteria = {};
-    if (artist) {
-      searchCriteria.artist = {$regex: artist, $options: 'i'};
-    }
-    if (venue) {
-      searchCriteria.venue = {$regex: venue, $options: 'i'};
-    }
-    if (city) {
-      searchCriteria.city = {$regex: city, $options: 'i'};
-    }
-    if (startDate || endDate) {
-      searchCriteria.date = {};
-      if (startDate) {
-        searchCriteria.date.$gte = new Date(startDate);
+    // if (artist) {
+    //   searchCriteria.artists = {$regex: artist, $options: 'i'};
+    // }
+    if (venue || city) {
+      searchCriteria.venue = {};
+      if (venue) {
+        searchCriteria.venue.name = {$regex: venue, $options: 'i'};
       }
-      if (endDate) {
-        searchCriteria.date.$lte = new Date(endDate);
+      if (city) {
+        searchCriteria.venue.city = {$regex: city, $options: 'i'};
       }
+    }
+    if (startDate) {
+      searchCriteria.startDate.$gte = new Date(startDate);
+    }
+    if (endDate) {
+      searchCriteria.endDate.$lte = new Date(endDate);
     }
 
     return Concert.find(searchCriteria);
