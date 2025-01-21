@@ -21,21 +21,5 @@ export default function DiscoveryRoutes(app) {
     }
   }
 
-  const getAttractions = async (req, res) => {
-    const params = {
-      apikey: API_KEY,
-      ...req.query
-    };
-    try {
-      const events = await axios.get(`${ATTRACTIONS_URL}`,
-          {params});
-      res.json(events.data);
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).json({error: 'Failed to fetch data from Discovery API'});
-    }
-  }
-
   app.get('/discovery/events', getEvents);
-  app.get('/discovery/attractions', getAttractions);
 }

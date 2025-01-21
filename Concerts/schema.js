@@ -13,8 +13,6 @@ const ConcertSchema = new mongoose.Schema(
         state: {type: String},
         country: {type: String, required: true},
         address: {type: String},
-        latitude: {type: Number},
-        longitude: {type: Number},
       },
       image: String,
       startDate: {type: Date, required: true}, // Concert start date and time
