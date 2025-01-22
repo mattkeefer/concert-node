@@ -28,7 +28,7 @@ const ConcertSchema = new mongoose.Schema(
       setlist: [{type: String}], // List of songs performed (for past concerts)
       source: {
         type: String,
-        enum: ['Ticketmaster', 'Setlist.fm'],
+        enum: ['Discovery', 'Setlist.fm', 'User'],
         required: true,
       }, // API source
       tags: [{type: String}], // User-defined tags for sharing/discovery
