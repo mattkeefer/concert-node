@@ -3,6 +3,7 @@ import Concert from './schema.js';
 const concertDao = {
   // Create a new concert
   createConcert: async (concertData) => {
+    delete concertData._id;
     const concert = new Concert(concertData);
     return await concert.save();
   },
@@ -10,6 +11,11 @@ const concertDao = {
   // Find a concert by its ID
   findConcertById: async (id) => {
     return Concert.findById(id);
+  },
+
+  // Find a concert corresponding to the discovery concert id
+  findOneConcertByDiscoveryId: async (discoveryId) => {
+    return Concert.findOne({discoveryId: discoveryId});
   },
 
   // Update a concert by its ID

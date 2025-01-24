@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const ConcertSchema = new mongoose.Schema(
     {
+      discoveryId: {type: String},
       title: {type: String, required: true}, // Concert name or title
       artists: [{
         name: {type: String, required: true},

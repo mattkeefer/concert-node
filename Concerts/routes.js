@@ -25,6 +25,19 @@ export default function ConcertRoutes(app) {
     }
   };
 
+  // Find a concert or create it if not exists
+  const findOrCreateConcert = async (req, res) => {
+    try {
+      let concert = await concertDao.findOneConcertByDiscoveryId(req.body.discoveryId);
+      if (!concert) {
+        concert = await concertDao.createConcert(req.body);
+      }
+      res.json(concert);
+    } catch (err) {
+      res.status(400).json({error: err.message});
+    }
+  }
+
   // Update a concert
   const updateConcert = async (req, res) => {
     try {
@@ -66,6 +79,7 @@ export default function ConcertRoutes(app) {
 
   app.post('/concerts', createConcert);
   app.get('/concerts/:id', getConcertById);
+  app.post('/concerts/find', findOrCreateConcert);
   app.put('/concerts/:id', updateConcert);
   app.delete('/concerts/:id', deleteConcert);
   app.get('/concerts', searchConcerts); // Search concerts using query parameters
