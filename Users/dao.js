@@ -12,6 +12,7 @@ const userDao = {
    */
   createUser: async (userData) => {
     try {
+      delete userData._id;
       const newUser = new User(userData);
       return await newUser.save();
     } catch (err) {
@@ -75,6 +76,24 @@ const userDao = {
       ).exec();
     } catch (err) {
       throw new Error(`Error saving concert: ${err.message}`);
+    }
+  },
+
+  /**
+   * Unsave a concert from a user's saved list.
+   * @param {String} userId - The user's ID
+   * @param {String} concertId - The concert's ID
+   * @returns {Promise<Object|null>} - The updated user or null if not found
+   */
+  unsaveConcert: async (userId, concertId) => {
+    try {
+      return await User.findByIdAndUpdate(
+          userId,
+          {$pull: {savedConcerts: concertId}},
+          {new: true}
+      ).exec();
+    } catch (err) {
+      throw new Error(`Error unsaving concert: ${err.message}`);
     }
   },
 

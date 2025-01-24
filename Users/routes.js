@@ -65,6 +65,20 @@ export default function UserRoutes(app) {
     }
   };
 
+  // Unsave a concert for a user
+  const unsaveConcert = async (req, res) => {
+    try {
+      const updatedUser = await userDao.unsaveConcert(req.params.id,
+          req.params.concertId);
+      if (!updatedUser) {
+        return res.status(404).json({error: 'User not found'});
+      }
+      res.json(updatedUser);
+    } catch (err) {
+      res.status(500).json({error: err.message});
+    }
+  };
+
   // Follow a user
   const followUser = async (req, res) => {
     try {
@@ -111,6 +125,7 @@ export default function UserRoutes(app) {
   app.get('/users/username/:username', getUserByUsername);
   app.put('/users/:id', updateUser);
   app.post('/users/:id/save-concert/:concertId', saveConcert);
+  app.post('/users/:id/unsave-concert/:concertId', unsaveConcert);
   app.post('/users/:id/follow/:targetUserId', followUser);
   app.post('/users/:id/unfollow/:targetUserId', unfollowUser);
   app.post('/users/register', register);
