@@ -170,13 +170,7 @@ const userDao = {
       throw new Error('Invalid email or password');
     }
 
-    // Generate a JWT token
-    const token = jwt.sign({userId: user._id, username: user.username},
-        JWT_SECRET, {
-          expiresIn: '1h', // Token expiration
-        });
-
-    return {token, user};
+    return user;
   },
 };
 

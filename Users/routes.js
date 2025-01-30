@@ -103,8 +103,8 @@ export default function UserRoutes(app) {
   const register = async (req, res) => {
     try {
       const newUser = await userDao.registerUser(req.body);
-      res.status(201).json(
-          {message: 'User registered successfully', user: newUser});
+      req.session.currentUser = newUser;
+      res.send(req.session.currentUser);
     } catch (err) {
       res.status(400).json({error: err.message});
     }
@@ -113,12 +113,33 @@ export default function UserRoutes(app) {
   // Login a user
   const login = async (req, res) => {
     try {
-      const {token, user} = await userDao.loginUser(req.body);
-      res.status(200).json({message: 'Login successful', token, user});
+      const user = await userDao.loginUser(req.body);
+      if (user) {
+        req.session.currentUser = user;
+        res.send(user);
+      } else {
+        res.sendStatus(401);
+      }
     } catch (err) {
-      res.status(400).json({error: err.message});
+      res.send(err);
     }
   };
+
+  const logout = (req, res) => {
+    req.session.destroy();
+    res.sendStatus(200);
+  }
+
+  const profile = async (req, res) => {
+    const userId = req.params.userId;
+    const currentUser = req.session.currentUser;
+    if (!currentUser) {
+      res.sendStatus(401);
+      return;
+    }
+    const user = await userDao.findUserById(userId);
+    res.json(user);
+  }
 
   app.post('/users', createUser);
   app.get('/users/:id', getUserById);
@@ -130,4 +151,6 @@ export default function UserRoutes(app) {
   app.post('/users/:id/unfollow/:targetUserId', unfollowUser);
   app.post('/users/register', register);
   app.post('/users/login', login);
+  app.post('/users/logout', logout);
+  app.post('/users/profile/:userId', profile);
 }
