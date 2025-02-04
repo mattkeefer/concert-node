@@ -1,4 +1,3 @@
-import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import User from './schema.js';
 
@@ -26,11 +25,11 @@ const userDao = {
    * @returns {Promise<Object|null>} - The user or null if not found
    */
   findUserById: async (userId) => {
-    try {
-      return await User.findById(userId).exec();
-    } catch (err) {
-      throw new Error(`Error finding user by ID: ${err.message}`);
-    }
+    return await User.findById(userId).exec();
+  },
+
+  findUserByIdAndPopulateSavedConcerts: async (userId) => {
+    return await User.findById(userId).populate('savedConcerts').exec();
   },
 
   /**

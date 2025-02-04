@@ -2,115 +2,118 @@ import userDao from "./dao.js";
 
 export default function UserRoutes(app) {
 
-  // Create a new user
   const createUser = async (req, res) => {
     try {
       const user = await userDao.createUser(req.body);
-      res.status(201).json(user);
+      res.send(user);
     } catch (err) {
-      res.status(400).json({error: err.message});
+      res.send(err);
     }
   };
 
-  // Get a user by ID
   const getUserById = async (req, res) => {
     try {
       const user = await userDao.findUserById(req.params.id);
       if (!user) {
-        return res.status(404).json({error: 'User not found'});
+        return res.sendStatus(404);
       }
-      res.json(user);
+      res.send(user);
     } catch (err) {
-      res.status(500).json({error: err.message});
+      res.send(err);
     }
   };
 
-  // Get a user by username
   const getUserByUsername = async (req, res) => {
     try {
       const user = await userDao.findUserByUsername(req.params.username);
       if (!user) {
-        return res.status(404).json({error: 'User not found'});
+        return res.sendStatus(404);
       }
       res.json(user);
     } catch (err) {
-      res.status(500).json({error: err.message});
+      res.send(err);
     }
   };
 
-  // Update a user
+  const getSavedConcertsForUser = async (req, res) => {
+    try {
+      const user = await userDao.findUserByIdAndPopulateSavedConcerts(
+          req.params.id);
+      if (!user) {
+        res.sendStatus(404);
+      }
+      res.send(user.savedConcerts);
+    } catch (err) {
+      res.send(err);
+    }
+  }
+
   const updateUser = async (req, res) => {
     try {
       const updatedUser = await userDao.updateUser(req.params.id, req.body);
       if (!updatedUser) {
-        return res.status(404).json({error: 'User not found'});
+        return res.sendStatus(404);
       }
-      res.json(updatedUser);
+      res.send(updatedUser);
     } catch (err) {
-      res.status(400).json({error: err.message});
+      res.send(err);
     }
   };
 
-  // Save a concert for a user
   const saveConcert = async (req, res) => {
     try {
       const updatedUser = await userDao.saveConcert(req.params.id,
           req.params.concertId);
       if (!updatedUser) {
-        return res.status(404).json({error: 'User not found'});
+        return res.sendStatus(404);
       }
-      res.json(updatedUser);
+      res.send(updatedUser);
     } catch (err) {
-      res.status(500).json({error: err.message});
+      res.send(err);
     }
   };
 
-  // Unsave a concert for a user
   const unsaveConcert = async (req, res) => {
     try {
       const updatedUser = await userDao.unsaveConcert(req.params.id,
           req.params.concertId);
       if (!updatedUser) {
-        return res.status(404).json({error: 'User not found'});
+        return res.sendStatus(404);
       }
-      res.json(updatedUser);
+      res.send(updatedUser);
     } catch (err) {
-      res.status(500).json({error: err.message});
+      res.send(err);
     }
   };
 
-  // Follow a user
   const followUser = async (req, res) => {
     try {
       await userDao.followUser(req.params.id, req.params.targetUserId);
-      res.status(204).send(); // No content
+      res.sendStatus(204);
     } catch (err) {
-      res.status(500).json({error: err.message});
+      res.send(err);
     }
   };
 
-  // Unfollow a user
   const unfollowUser = async (req, res) => {
     try {
       await userDao.unfollowUser(req.params.id, req.params.targetUserId);
-      res.status(204).send(); // No content
+      res.sendStatus(204);
     } catch (err) {
-      res.status(500).json({error: err.message});
+      res.send(err);
     }
   };
 
-  // Register a new user
   const register = async (req, res) => {
     try {
       const newUser = await userDao.registerUser(req.body);
       req.session.currentUser = newUser;
       res.send(req.session.currentUser);
     } catch (err) {
-      res.status(400).json({error: err.message});
+      res.send(err);
     }
   };
 
-  // Login a user
   const login = async (req, res) => {
     try {
       const user = await userDao.loginUser(req.body);
@@ -143,6 +146,7 @@ export default function UserRoutes(app) {
 
   app.post('/users', createUser);
   app.get('/users/:id', getUserById);
+  app.get('/users/:id/concerts', getSavedConcertsForUser);
   app.get('/users/username/:username', getUserByUsername);
   app.put('/users/:id', updateUser);
   app.post('/users/:id/save-concert/:concertId', saveConcert);
