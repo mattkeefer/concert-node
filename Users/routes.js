@@ -42,7 +42,7 @@ export default function UserRoutes(app) {
       if (!user) {
         res.sendStatus(404);
       }
-      res.send(user.savedConcerts);
+      res.send([...user.savedConcerts].sort((a, b) => a.startDate - b.startDate));
     } catch (err) {
       res.send(err);
     }

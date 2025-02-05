@@ -73,7 +73,7 @@ export default function ConcertRoutes(app) {
       const concerts = await concertDao.findConcertsByQuery(req.query);
       res.json(concerts);
     } catch (err) {
-      res.status(500).json({error: err.message});
+      res.send(err);
     }
   };
 

@@ -46,14 +46,15 @@ const concertDao = {
         searchCriteria.venue.city = {$regex: city, $options: 'i'};
       }
     }
+    // Find concerts starting after "start date"
     if (startDate) {
-      searchCriteria.startDate.$gte = new Date(startDate);
+      searchCriteria.startDate = {$gte: new Date(startDate)};
     }
+    // Find concerts starting before "end date"
     if (endDate) {
-      searchCriteria.endDate.$lte = new Date(endDate);
+      searchCriteria.startDate = {$lte: new Date(endDate)};
     }
-
-    return Concert.find(searchCriteria);
+    return Concert.find(searchCriteria).sort({startDate: 1});
   },
 }
 
