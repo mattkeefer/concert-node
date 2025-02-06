@@ -30,7 +30,7 @@ const concertDao = {
 
   // Find concerts based on a search query
   findConcertsByQuery: async (query) => {
-    const {artist, venue, city, startDate, endDate} = query;
+    const {artist, venue, city, startDate, endDate, sort} = query;
 
     // Build dynamic query
     const searchCriteria = {};
@@ -54,7 +54,10 @@ const concertDao = {
     if (endDate) {
       searchCriteria.startDate = {$lte: new Date(endDate)};
     }
-    return Concert.find(searchCriteria).sort({startDate: 1});
+
+    return sort === false ?
+        Concert.find(searchCriteria) :
+        Concert.find(searchCriteria).sort({startDate: 1});
   },
 }
 
