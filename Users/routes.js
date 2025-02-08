@@ -43,7 +43,8 @@ export default function UserRoutes(app) {
         res.sendStatus(404);
       }
       // Sort concerts chronologically
-      res.send([...user.savedConcerts].sort((a, b) => a.startDate - b.startDate));
+      res.send(
+          [...user.savedConcerts].sort((a, b) => a.startDate - b.startDate));
     } catch (err) {
       res.send(err);
     }
@@ -62,11 +63,16 @@ export default function UserRoutes(app) {
   };
 
   const saveConcert = async (req, res) => {
+    if (!req.session.currentUser ||
+        req.session.currentUser._id !== req.params.id) {
+      res.sendStatus(401);
+      return;
+    }
     try {
       const updatedUser = await userDao.saveConcert(req.params.id,
           req.params.concertId);
       if (!updatedUser) {
-        return res.sendStatus(404);
+        return res.sendStatus(500);
       }
       res.send(updatedUser);
     } catch (err) {
@@ -75,11 +81,16 @@ export default function UserRoutes(app) {
   };
 
   const unsaveConcert = async (req, res) => {
+    if (!req.session.currentUser ||
+        req.session.currentUser._id !== req.params.id) {
+      res.sendStatus(401);
+      return;
+    }
     try {
       const updatedUser = await userDao.unsaveConcert(req.params.id,
           req.params.concertId);
       if (!updatedUser) {
-        return res.sendStatus(404);
+        return res.sendStatus(500);
       }
       res.send(updatedUser);
     } catch (err) {
@@ -88,6 +99,11 @@ export default function UserRoutes(app) {
   };
 
   const followUser = async (req, res) => {
+    if (!req.session.currentUser ||
+        req.session.currentUser._id !== req.params.id) {
+      res.sendStatus(401);
+      return;
+    }
     try {
       await userDao.followUser(req.params.id, req.params.targetUserId);
       res.sendStatus(204);
@@ -97,6 +113,11 @@ export default function UserRoutes(app) {
   };
 
   const unfollowUser = async (req, res) => {
+    if (!req.session.currentUser ||
+        req.session.currentUser._id !== req.params.id) {
+      res.sendStatus(401);
+      return;
+    }
     try {
       await userDao.unfollowUser(req.params.id, req.params.targetUserId);
       res.sendStatus(204);
