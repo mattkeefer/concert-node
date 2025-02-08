@@ -139,8 +139,6 @@ export default function UserRoutes(app) {
   const login = async (req, res) => {
     try {
       const user = await userDao.loginUser(req.body);
-      console.log(req.body);
-      console.log(user);
       if (user) {
         req.session.currentUser = user;
         res.send(user);
