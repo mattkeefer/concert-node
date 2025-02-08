@@ -6,9 +6,9 @@ export default function ConcertRoutes(app) {
   const createConcert = async (req, res) => {
     try {
       const concert = await concertDao.createConcert(req.body);
-      res.status(201).json(concert);
+      res.json(concert);
     } catch (err) {
-      res.status(400).json({error: err.message});
+      res.status(400).send(err);
     }
   };
 
@@ -17,24 +17,26 @@ export default function ConcertRoutes(app) {
     try {
       const concert = await concertDao.findConcertById(req.params.id);
       if (!concert) {
-        return res.status(404).json({error: 'Concert not found'});
+        res.sendStatus(404);
+        return;
       }
       res.json(concert);
     } catch (err) {
-      res.status(500).json({error: err.message});
+      res.status(500).send(err);
     }
   };
 
   // Find a concert or create it if not exists
   const findOrCreateConcert = async (req, res) => {
     try {
-      let concert = await concertDao.findOneConcertByDiscoveryId(req.body.discoveryId);
+      let concert = await concertDao.findOneConcertByDiscoveryId(
+          req.body.discoveryId);
       if (!concert) {
         concert = await concertDao.createConcert(req.body);
       }
       res.json(concert);
     } catch (err) {
-      res.status(400).json({error: err.message});
+      res.status(400).send(err);
     }
   }
 
@@ -44,12 +46,12 @@ export default function ConcertRoutes(app) {
       const updatedConcert = await concertDao.updateConcert(req.params.id,
           req.body);
       if (!updatedConcert) {
-        return res.status(404).json(
-            {error: 'Concert not found'});
+        res.sendStatus(404);
+        return;
       }
       res.json(updatedConcert);
     } catch (err) {
-      res.status(400).json({error: err.message});
+      res.status(400).send(err);
     }
   };
 
@@ -58,12 +60,12 @@ export default function ConcertRoutes(app) {
     try {
       const deletedConcert = await concertDao.deleteConcert(req.params.id);
       if (!deletedConcert) {
-        return res.status(404).json(
-            {error: 'Concert not found'});
+        res.sendStatus(404);
+        return;
       }
-      res.status(204).send(); // No content
+      res.sendStatus(204);
     } catch (err) {
-      res.status(500).json({error: err.message});
+      res.status(500).send(err);
     }
   };
 
@@ -73,7 +75,7 @@ export default function ConcertRoutes(app) {
       const concerts = await concertDao.findConcertsByQuery(req.query);
       res.json(concerts);
     } catch (err) {
-      res.send(err);
+      res.status(500).send(err);
     }
   };
 

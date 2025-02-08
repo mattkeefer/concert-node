@@ -7,7 +7,7 @@ export default function UserRoutes(app) {
       const user = await userDao.createUser(req.body);
       res.send(user);
     } catch (err) {
-      res.send(err);
+      res.status(500).send(err);
     }
   };
 
@@ -19,7 +19,7 @@ export default function UserRoutes(app) {
       }
       res.send(user);
     } catch (err) {
-      res.send(err);
+      res.status(500).send(err);
     }
   };
 
@@ -31,7 +31,7 @@ export default function UserRoutes(app) {
       }
       res.json(user);
     } catch (err) {
-      res.send(err);
+      res.status(500).send(err);
     }
   };
 
@@ -46,7 +46,7 @@ export default function UserRoutes(app) {
       res.send(
           [...user.savedConcerts].sort((a, b) => a.startDate - b.startDate));
     } catch (err) {
-      res.send(err);
+      res.status(500).send(err);
     }
   }
 
@@ -58,7 +58,7 @@ export default function UserRoutes(app) {
       }
       res.send(updatedUser);
     } catch (err) {
-      res.send(err);
+      res.status(500).send(err);
     }
   };
 
@@ -76,7 +76,7 @@ export default function UserRoutes(app) {
       }
       res.send(updatedUser);
     } catch (err) {
-      res.send(err);
+      res.status(500).send(err);
     }
   };
 
@@ -94,7 +94,7 @@ export default function UserRoutes(app) {
       }
       res.send(updatedUser);
     } catch (err) {
-      res.send(err);
+      res.status(500).send(err);
     }
   };
 
@@ -108,7 +108,7 @@ export default function UserRoutes(app) {
       await userDao.followUser(req.params.id, req.params.targetUserId);
       res.sendStatus(204);
     } catch (err) {
-      res.send(err);
+      res.status(500).send(err);
     }
   };
 
@@ -122,7 +122,7 @@ export default function UserRoutes(app) {
       await userDao.unfollowUser(req.params.id, req.params.targetUserId);
       res.sendStatus(204);
     } catch (err) {
-      res.send(err);
+      res.status(500).send(err);
     }
   };
 
@@ -132,21 +132,23 @@ export default function UserRoutes(app) {
       req.session.currentUser = newUser;
       res.send(req.session.currentUser);
     } catch (err) {
-      res.send(err);
+      res.status(400).send(err);
     }
   };
 
   const login = async (req, res) => {
     try {
       const user = await userDao.loginUser(req.body);
+      console.log(req.body);
+      console.log(user);
       if (user) {
         req.session.currentUser = user;
         res.send(user);
       } else {
-        res.sendStatus(401);
+        res.sendStatus(500);
       }
     } catch (err) {
-      res.send(err);
+      res.status(400).send(err);
     }
   };
 
