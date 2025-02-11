@@ -17,7 +17,7 @@ export default function DiscoveryRoutes(app) {
       res.json(events.data);
     } catch (err) {
       console.error(err.message);
-      res.status(500).json({error: 'Failed to fetch data from Discovery API'});
+      res.status(500).send(err);
     }
   }
 
