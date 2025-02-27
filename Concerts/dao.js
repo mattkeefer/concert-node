@@ -30,21 +30,21 @@ const concertDao = {
 
   // Find concerts based on a search query
   findConcertsByQuery: async (query) => {
-    const {artist, venue, city, startDate, endDate, sort} = query;
+    const {keyword, artist, venue, city, startDate, endDate, sort} = query;
 
     // Build dynamic query
     const searchCriteria = {};
-    // if (artist) {
-    //   searchCriteria.artists = {$regex: artist, $options: 'i'};
-    // }
-    if (venue || city) {
-      searchCriteria.venue = {};
-      if (venue) {
-        searchCriteria.venue.name = {$regex: venue, $options: 'i'};
-      }
-      if (city) {
-        searchCriteria.venue.city = {$regex: city, $options: 'i'};
-      }
+    if (keyword) {
+      searchCriteria.title = {$regex: keyword, $options: 'i'};
+    }
+    if (artist) {
+      searchCriteria['artists.name'] = {$regex: artist, $options: 'i'};
+    }
+    if (venue) {
+      searchCriteria['venue.name'] = {$regex: venue, $options: 'i'};
+    }
+    if (city) {
+      searchCriteria['venue.city'] = {$regex: city, $options: 'i'};
     }
     // Find concerts starting after "start date"
     if (startDate) {
