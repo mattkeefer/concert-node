@@ -24,7 +24,10 @@ const userDao = {
    * @returns {Promise<Object|null>} - The user or null if not found
    */
   findUserById: async (userId) => {
-    return await User.findById(userId).exec();
+    return await User.findById(userId)
+      .populate('followers', '_id, firstName lastName username profilePicture')
+      .populate('following', '_id, firstName lastName username profilePicture')
+      .exec();
   },
 
   findUserByIdAndPopulateSavedConcerts: async (userId) => {
