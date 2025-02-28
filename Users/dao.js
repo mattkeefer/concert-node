@@ -1,7 +1,6 @@
 import bcrypt from 'bcrypt';
 import User from './schema.js';
-
-const JWT_SECRET = process.env.JWT_SECRET;
+import Concert from '../Concerts/schema.js';
 
 const userDao = {
   /**
@@ -68,6 +67,11 @@ const userDao = {
    */
   saveConcert: async (userId, concertId) => {
     try {
+      await Concert.findByIdAndUpdate(
+          concertId,
+          {$addToSet: {attendingUsers: userId}},
+          {new: true}
+      ).exec();
       return await User.findByIdAndUpdate(
           userId,
           {$addToSet: {savedConcerts: concertId}}, // Avoid duplicate entries
@@ -86,6 +90,11 @@ const userDao = {
    */
   unsaveConcert: async (userId, concertId) => {
     try {
+      await Concert.findByIdAndUpdate(
+          concertId,
+          {$pull: {attendingUsers: userId}},
+          {new: true}
+      ).exec();
       return await User.findByIdAndUpdate(
           userId,
           {$pull: {savedConcerts: concertId}},

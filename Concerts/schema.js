@@ -15,6 +15,7 @@ const ConcertSchema = new mongoose.Schema(
         country: {type: String, required: true},
         address: {type: String},
       },
+      attendingUsers: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
       image: String,
       startDate: {type: Date, required: true}, // Concert start date and time
       endDate: {type: Date}, // Concert end date and time
