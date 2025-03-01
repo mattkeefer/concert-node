@@ -34,6 +34,10 @@ const userDao = {
     return await User.findById(userId).populate('savedConcerts').exec();
   },
 
+  findUserFollowingById: async (userId) => {
+    return await User.findById(userId).select('following').lean().exec();
+  },
+
   /**
    * Find a user by username.
    * @param {String} username - The username

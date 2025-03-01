@@ -72,6 +72,11 @@ export default function ConcertRoutes(app) {
   // Search for concerts
   const searchConcerts = async (req, res) => {
     try {
+      const currentUser = req.session.currentUser;
+      if (!currentUser && req.query.userId) {
+        res.sendStatus(401);
+        return;
+      }
       const concerts = await concertDao.findConcertsByQuery(req.query);
       res.json(concerts);
     } catch (err) {

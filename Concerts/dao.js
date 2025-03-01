@@ -1,4 +1,5 @@
 import Concert from './schema.js';
+import userDao from "../Users/dao.js";
 
 const concertDao = {
   // Create a new concert
@@ -30,10 +31,23 @@ const concertDao = {
 
   // Find concerts based on a search query
   findConcertsByQuery: async (query) => {
-    const {keyword, artist, venue, city, startDate, endDate, sort} = query;
+    const {
+      userId,
+      keyword,
+      artist,
+      venue,
+      city,
+      startDate,
+      endDate,
+      sort,
+      following,
+      saved
+    } = query;
 
     // Build dynamic query
     const searchCriteria = {};
+    const concertQuery = [];
+    
     if (keyword) {
       searchCriteria.title = {$regex: keyword, $options: 'i'};
     }
@@ -55,9 +69,24 @@ const concertDao = {
       searchCriteria.startDate = {$lte: new Date(endDate)};
     }
 
+    concertQuery.push(searchCriteria);
+
+    // Handle user-based filtering
+    if (userId && (following === 'true' || saved === 'true')) {
+      const user = await userDao.findUserFollowingById(userId);
+      if (!user) throw new Error('User not found');
+      if (following === 'true') {
+        if (!user.following) return [];
+        concertQuery.push({attendingUsers: {$in: user.following}});
+      }
+      if (saved === 'true') {
+        concertQuery.push({attendingUsers: userId});
+      }
+    }
+
     return sort === false ?
-        Concert.find(searchCriteria) :
-        Concert.find(searchCriteria).sort({startDate: 1});
+        Concert.find({$and: concertQuery}) :
+        Concert.find({$and: concertQuery}).sort({startDate: 1});
   },
 }
 
