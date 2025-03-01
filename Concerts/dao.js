@@ -47,7 +47,7 @@ const concertDao = {
     // Build dynamic query
     const searchCriteria = {};
     const concertQuery = [];
-    
+
     if (keyword) {
       searchCriteria.title = {$regex: keyword, $options: 'i'};
     }
