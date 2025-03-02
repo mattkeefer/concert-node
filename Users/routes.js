@@ -166,6 +166,16 @@ export default function UserRoutes(app) {
     res.json(user);
   }
 
+  const searchUsers = async (req, res) => {
+    try {
+      const users = await userDao.findUsersByQuery(req.query);
+      res.json(users);
+    } catch (err) {
+      res.status(500).send(err);
+    }
+
+  }
+
   app.post('/users', createUser);
   app.get('/users/:id', getUserById);
   app.get('/users/:id/concerts', getSavedConcertsForUser);
@@ -179,4 +189,5 @@ export default function UserRoutes(app) {
   app.post('/users/login', login);
   app.post('/users/logout', logout);
   app.post('/users/profile/:userId', profile);
+  app.get('/users', searchUsers);
 }

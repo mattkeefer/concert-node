@@ -73,7 +73,8 @@ export default function ConcertRoutes(app) {
   const searchConcerts = async (req, res) => {
     try {
       const currentUser = req.session.currentUser;
-      if (!currentUser && req.query.userId) {
+      if (!currentUser && (req.query.saved
+          || req.query.following)) {
         res.sendStatus(401);
         return;
       }

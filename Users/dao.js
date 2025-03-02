@@ -25,9 +25,9 @@ const userDao = {
    */
   findUserById: async (userId) => {
     return await User.findById(userId)
-      .populate('followers', '_id, firstName lastName username profilePicture')
-      .populate('following', '_id, firstName lastName username profilePicture')
-      .exec();
+    .populate('followers', '_id, firstName lastName username profilePicture')
+    .populate('following', '_id, firstName lastName username profilePicture')
+    .exec();
   },
 
   findUserByIdAndPopulateSavedConcerts: async (userId) => {
@@ -49,6 +49,17 @@ const userDao = {
     } catch (err) {
       throw new Error(`Error finding user by username: ${err.message}`);
     }
+  },
+
+  findUsersByQuery: async (query) => {
+    const {username} = query;
+    const searchCriteria = {};
+
+    if (username) {
+      searchCriteria.username = {$regex: username, $options: 'i'};
+    }
+
+    return User.find(searchCriteria);
   },
 
   /**
