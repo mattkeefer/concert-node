@@ -142,7 +142,7 @@ export default function UserRoutes(app) {
       console.log(user);
       if (user) {
         req.session.currentUser = user;
-        console.log('USER COOKIE: ' + req.session);
+        console.log(req.session);
         res.send(user);
       } else {
         res.sendStatus(500);
