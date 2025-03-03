@@ -1,6 +1,11 @@
 {
   "name": "concert-node",
   "version": "1.0.0",
+  "main": "App.js",
+  "scripts": {
+    "start": "node App.js"
+  },
+  "author": "Matthew Keefer",
   "dependencies": {
     "axios": "^1.6.8",
     "bcrypt": "^5.1.1",
