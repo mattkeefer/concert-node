@@ -130,6 +130,7 @@ export default function UserRoutes(app) {
     try {
       const newUser = await userDao.registerUser(req.body);
       req.session.currentUser = newUser;
+      req.session.save();
       res.send(req.session.currentUser);
     } catch (err) {
       res.status(400).send(err);
@@ -142,7 +143,7 @@ export default function UserRoutes(app) {
       console.log(user);
       if (user) {
         req.session.currentUser = user;
-        console.log(req.session);
+        req.session.save();
         res.send(user);
       } else {
         res.sendStatus(500);
