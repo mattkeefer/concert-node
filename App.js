@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors"
 import session from "express-session"
 import mongoose from "mongoose";
+import MongoStore from "connect-mongo";
 import "dotenv/config";
 import UserRoutes from "./Users/routes.js";
 import ConcertRoutes from "./Concerts/routes.js";
@@ -14,8 +15,16 @@ const sessionOptions = {
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: CONNECTION_STRING,
+    collectionName: 'sessions',
+    ttl: 60 * 60 * 24, // 1 day
+  }),
   cookie: {
-    secure: (process.env.NODE_ENV && process.env.NODE_ENV === 'production')
+    secure: process.env.NODE_ENV && process.env.NODE_ENV === 'production',
+    maxAge: 1000 * 60 * 60 * 24, // 1 day
+    httpOnly: true,
+    sameSite: 'strict',
   },
 };
 
