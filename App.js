@@ -21,7 +21,6 @@ const sessionOptions = {
     ttl: 60 * 60 * 24, // 1 day
   }),
   cookie: {
-    secure: process.env.NODE_ENV && process.env.NODE_ENV === 'production',
     maxAge: 1000 * 60 * 60 * 24, // 1 day
     httpOnly: true,
     sameSite: 'strict',
@@ -31,7 +30,6 @@ const sessionOptions = {
 if (process.env.NODE_ENV !== "development") {
   sessionOptions.proxy = true;
   sessionOptions.cookie = {
-    sameSite: "none",
     secure: true,
   };
 }
