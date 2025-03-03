@@ -14,6 +14,9 @@ const sessionOptions = {
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
+  cookie: {
+    secure: (process.env.NODE_ENV && process.env.NODE_ENV === 'production')
+  },
 };
 
 if (process.env.NODE_ENV !== "development") {
