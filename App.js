@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import "dotenv/config";
 import UserRoutes from "./Users/routes.js";
 import ConcertRoutes from "./Concerts/routes.js";
+import DiscoveryRoutes from "./Discovery/routes.js";
 
 const CONNECTION_STRING = process.env.DB_CONNECTION_STRING;
 mongoose.connect(CONNECTION_STRING);
@@ -34,5 +35,9 @@ app.use(session(sessionOptions));
 app.use(express.json());
 UserRoutes(app);
 ConcertRoutes(app);
-app.listen(process.env.PORT || 4000);
+DiscoveryRoutes(app);
+// SetlistRoutes(app);
+app.listen(process.env.PORT || 4000, () => {
+  console.log(`Server is running on http://localhost:${process.env.PORT}`);
+});
 

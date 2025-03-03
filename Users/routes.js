@@ -1,100 +1,193 @@
-import * as dao from "./dao.js";
+import userDao from "./dao.js";
 
 export default function UserRoutes(app) {
+
   const createUser = async (req, res) => {
-    const user = await dao.createUser(req.body);
-    res.json(user);
-  };
-
-  const deleteUser = async (req, res) => {
-    const {userId} = req.params;
-    const user = await dao.findUserById(userId);
-
-    // try {
-    //   await Promise.all(user.following.map(
-    //       async (id) => await socialDao.userUnfollowsUser(userId, id)));
-    //   await Promise.all(user.likedTracks.map(
-    //       async (id) => await likesDao.userUnlikesTrack(userId, id)));
-    //   await Promise.all(user.followers.map(
-    //       async (id) => await socialDao.userUnfollowsUser(id, userId)));
-    // } catch (e) {
-    //   console.warn(`Error while deleting user and relationships: ${e}`);
-    // }
-
-    const status = await dao.deleteUser(userId);
-    res.json(status);
-  };
-
-  const findAllUsers = async (req, res) => {
-    const {role} = req.query;
-    if (role) {
-      const users = await dao.findUsersByRole(role);
-      res.json(users);
-      return;
+    try {
+      const user = await userDao.createUser(req.body);
+      res.send(user);
+    } catch (err) {
+      res.status(500).send(err);
     }
-    const users = await dao.findAllUsers();
-    res.json(users);
   };
 
-  const findUserById = async (req, res) => {
-    const {userId} = req.params;
-    const user = await dao.findUserById(userId);
-    res.json(user);
+  const getUserById = async (req, res) => {
+    try {
+      const user = await userDao.findUserById(req.params.id);
+      if (!user) {
+        return res.sendStatus(404);
+      }
+      res.send(user);
+    } catch (err) {
+      res.status(500).send(err);
+    }
   };
+
+  const getUserByUsername = async (req, res) => {
+    try {
+      const user = await userDao.findUserByUsername(req.params.username);
+      if (!user) {
+        return res.sendStatus(404);
+      }
+      res.json(user);
+    } catch (err) {
+      res.status(500).send(err);
+    }
+  };
+
+  const getSavedConcertsForUser = async (req, res) => {
+    try {
+      const user = await userDao.findUserByIdAndPopulateSavedConcerts(
+          req.params.id);
+      if (!user) {
+        res.sendStatus(404);
+      }
+      // Sort concerts chronologically
+      res.send(
+          [...user.savedConcerts].sort((a, b) => a.startDate - b.startDate));
+    } catch (err) {
+      res.status(500).send(err);
+    }
+  }
 
   const updateUser = async (req, res) => {
-    const {userId} = req.params;
-    const status = await dao.updateUser(userId, req.body);
-    const updatedUser = await dao.findUserById(userId);
-    req.session.currentUser = updatedUser;
-    res.json(updatedUser);
+    try {
+      const updatedUser = await userDao.updateUser(req.params.id, req.body);
+      if (!updatedUser) {
+        return res.sendStatus(404);
+      }
+      res.send(updatedUser);
+    } catch (err) {
+      res.status(500).send(err);
+    }
+  };
+
+  const saveConcert = async (req, res) => {
+    if (!req.session.currentUser ||
+        req.session.currentUser._id !== req.params.id) {
+      res.sendStatus(401);
+      return;
+    }
+    try {
+      const updatedUser = await userDao.saveConcert(req.params.id,
+          req.params.concertId);
+      if (!updatedUser) {
+        return res.sendStatus(500);
+      }
+      res.send(updatedUser);
+    } catch (err) {
+      res.status(500).send(err);
+    }
+  };
+
+  const unsaveConcert = async (req, res) => {
+    if (!req.session.currentUser ||
+        req.session.currentUser._id !== req.params.id) {
+      res.sendStatus(401);
+      return;
+    }
+    try {
+      const updatedUser = await userDao.unsaveConcert(req.params.id,
+          req.params.concertId);
+      if (!updatedUser) {
+        return res.sendStatus(500);
+      }
+      res.send(updatedUser);
+    } catch (err) {
+      res.status(500).send(err);
+    }
+  };
+
+  const followUser = async (req, res) => {
+    if (!req.session.currentUser ||
+        req.session.currentUser._id !== req.params.id) {
+      res.sendStatus(401);
+      return;
+    }
+    try {
+      await userDao.followUser(req.params.id, req.params.targetUserId);
+      res.sendStatus(204);
+    } catch (err) {
+      res.status(500).send(err);
+    }
+  };
+
+  const unfollowUser = async (req, res) => {
+    if (!req.session.currentUser ||
+        req.session.currentUser._id !== req.params.id) {
+      res.sendStatus(401);
+      return;
+    }
+    try {
+      await userDao.unfollowUser(req.params.id, req.params.targetUserId);
+      res.sendStatus(204);
+    } catch (err) {
+      res.status(500).send(err);
+    }
   };
 
   const register = async (req, res) => {
-    const user = await dao.findUserByUsername(req.body.username);
-    if (user) {
-      res.status(400).json({message: "Username already taken"});
-      return;
+    try {
+      const newUser = await userDao.registerUser(req.body);
+      req.session.currentUser = newUser;
+      res.send(req.session.currentUser);
+    } catch (err) {
+      res.status(400).send(err);
     }
-    const currentUser = await dao.createUser(req.body);
-    req.session.currentUser = currentUser;
-    res.json(currentUser);
   };
 
   const login = async (req, res) => {
-    const {username, password} = req.body;
-    const currentUser = await dao.findUserByCredentials(username, password);
-    if (currentUser) {
-      req.session.currentUser = currentUser;
-      res.send(currentUser);
-    } else {
-      res.sendStatus(401);
+    try {
+      const user = await userDao.loginUser(req.body);
+      if (user) {
+        req.session.currentUser = user;
+        res.send(user);
+      } else {
+        res.sendStatus(500);
+      }
+    } catch (err) {
+      res.status(400).send(err);
     }
   };
 
   const logout = (req, res) => {
     req.session.destroy();
     res.sendStatus(200);
-  };
+  }
 
   const profile = async (req, res) => {
-    const {userId} = req.params;
+    const userId = req.params.userId;
     const currentUser = req.session.currentUser;
     if (!currentUser) {
       res.sendStatus(401);
       return;
     }
-    const user = await dao.findUserById(userId);
+    const user = await userDao.findUserById(userId);
     res.json(user);
-  };
+  }
 
-  app.post("/api/users", createUser);
-  app.get("/api/users", findAllUsers);
-  app.get("/api/users/:userId", findUserById);
-  app.put("/api/users/:userId", updateUser);
-  app.delete("/api/users/:userId", deleteUser);
-  app.post("/api/users/register", register);
-  app.post("/api/users/login", login);
-  app.post("/api/users/logout", logout);
-  app.post("/api/users/profile/:userId", profile);
+  const searchUsers = async (req, res) => {
+    try {
+      const users = await userDao.findUsersByQuery(req.query);
+      res.json(users);
+    } catch (err) {
+      res.status(500).send(err);
+    }
+
+  }
+
+  app.post('/users', createUser);
+  app.get('/users/:id', getUserById);
+  app.get('/users/:id/concerts', getSavedConcertsForUser);
+  app.get('/users/username/:username', getUserByUsername);
+  app.put('/users/:id', updateUser);
+  app.post('/users/:id/save-concert/:concertId', saveConcert);
+  app.post('/users/:id/unsave-concert/:concertId', unsaveConcert);
+  app.post('/users/:id/follow/:targetUserId', followUser);
+  app.post('/users/:id/unfollow/:targetUserId', unfollowUser);
+  app.post('/users/register', register);
+  app.post('/users/login', login);
+  app.post('/users/logout', logout);
+  app.post('/users/profile/:userId', profile);
+  app.get('/users', searchUsers);
 }
