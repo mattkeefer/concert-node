@@ -41,6 +41,7 @@ app.use(
       origin: process.env.FRONTEND_URL,
     })
 );
+app.set('trust proxy', 1); // Trust Heroku's reverse proxy
 app.use(session(sessionOptions));
 app.use(express.json());
 UserRoutes(app);
