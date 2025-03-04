@@ -16,7 +16,6 @@ export default function DiscoveryRoutes(app) {
           `${EVENTS_URL}`, {params});
       res.json(events.data);
     } catch (err) {
-      console.error(err.message);
       res.status(500).send(err);
     }
   }
