@@ -1,4 +1,6 @@
 import userDao from "./dao.js";
+import jwt from "jsonwebtoken";
+import {authenticateToken} from "../Auth/auth.js";
 
 export default function UserRoutes(app) {
 
@@ -63,8 +65,7 @@ export default function UserRoutes(app) {
   };
 
   const saveConcert = async (req, res) => {
-    if (!req.session.currentUser ||
-        req.session.currentUser._id !== req.params.id) {
+    if (req.user._id !== req.params.id) {
       res.sendStatus(401);
       return;
     }
@@ -81,8 +82,7 @@ export default function UserRoutes(app) {
   };
 
   const unsaveConcert = async (req, res) => {
-    if (!req.session.currentUser ||
-        req.session.currentUser._id !== req.params.id) {
+    if (req.user._id !== req.params.id) {
       res.sendStatus(401);
       return;
     }
@@ -99,8 +99,7 @@ export default function UserRoutes(app) {
   };
 
   const followUser = async (req, res) => {
-    if (!req.session.currentUser ||
-        req.session.currentUser._id !== req.params.id) {
+    if (req.user._id !== req.params.id) {
       res.sendStatus(401);
       return;
     }
@@ -113,8 +112,7 @@ export default function UserRoutes(app) {
   };
 
   const unfollowUser = async (req, res) => {
-    if (!req.session.currentUser ||
-        req.session.currentUser._id !== req.params.id) {
+    if (req.user._id !== req.params.id) {
       res.sendStatus(401);
       return;
     }
@@ -128,9 +126,14 @@ export default function UserRoutes(app) {
 
   const register = async (req, res) => {
     try {
-      const newUser = await userDao.registerUser(req.body);
-      req.session.currentUser = newUser;
-      res.send(req.session.currentUser);
+      const user = await userDao.registerUser(req.body);
+      if (user) {
+        const token = jwt.sign({user}, process.env.JWT_SECRET,
+            {expiresIn: '1d'});
+        res.json({user, token});
+      } else {
+        res.sendStatus(500);
+      }
     } catch (err) {
       res.status(400).send(err);
     }
@@ -140,8 +143,9 @@ export default function UserRoutes(app) {
     try {
       const user = await userDao.loginUser(req.body);
       if (user) {
-        req.session.currentUser = user;
-        res.send(user);
+        const token = jwt.sign({user}, process.env.JWT_SECRET,
+            {expiresIn: '1d'});
+        res.json({user, token});
       } else {
         res.sendStatus(500);
       }
@@ -150,18 +154,8 @@ export default function UserRoutes(app) {
     }
   };
 
-  const logout = (req, res) => {
-    req.session.destroy();
-    res.sendStatus(200);
-  }
-
   const profile = async (req, res) => {
     const userId = req.params.userId;
-    const currentUser = req.session.currentUser;
-    if (!currentUser) {
-      res.sendStatus(401);
-      return;
-    }
     const user = await userDao.findUserById(userId);
     res.json(user);
   }
@@ -181,13 +175,15 @@ export default function UserRoutes(app) {
   app.get('/users/:id/concerts', getSavedConcertsForUser);
   app.get('/users/username/:username', getUserByUsername);
   app.put('/users/:id', updateUser);
-  app.post('/users/:id/save-concert/:concertId', saveConcert);
-  app.post('/users/:id/unsave-concert/:concertId', unsaveConcert);
-  app.post('/users/:id/follow/:targetUserId', followUser);
-  app.post('/users/:id/unfollow/:targetUserId', unfollowUser);
+  app.post('/users/:id/save-concert/:concertId', authenticateToken,
+      saveConcert);
+  app.post('/users/:id/unsave-concert/:concertId', authenticateToken,
+      unsaveConcert);
+  app.post('/users/:id/follow/:targetUserId', authenticateToken, followUser);
+  app.post('/users/:id/unfollow/:targetUserId', authenticateToken,
+      unfollowUser);
   app.post('/users/register', register);
   app.post('/users/login', login);
-  app.post('/users/logout', logout);
-  app.post('/users/profile/:userId', profile);
+  app.post('/users/profile/:userId', authenticateToken, profile);
   app.get('/users', searchUsers);
 }

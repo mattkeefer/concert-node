@@ -1,4 +1,5 @@
 import concertDao from "./dao.js";
+import {authenticateToken} from "../Auth/auth.js";
 
 export default function ConcertRoutes(app) {
 
@@ -69,15 +70,14 @@ export default function ConcertRoutes(app) {
     }
   };
 
+  const fetchConcerts = async (req, res) => {
+    const concerts = await concertDao.findConcertsByQuery(req.query);
+    res.json(concerts);
+  }
+
   // Search for concerts
   const searchConcerts = async (req, res) => {
     try {
-      const currentUser = req.session.currentUser;
-      if (!currentUser && (req.query.saved
-          || req.query.following)) {
-        res.sendStatus(401);
-        return;
-      }
       const concerts = await concertDao.findConcertsByQuery(req.query);
       res.json(concerts);
     } catch (err) {
@@ -86,9 +86,10 @@ export default function ConcertRoutes(app) {
   };
 
   app.post('/concerts', createConcert);
+  app.get('/concerts/no-auth', fetchConcerts);
   app.get('/concerts/:id', getConcertById);
   app.post('/concerts/find', findOrCreateConcert);
   app.put('/concerts/:id', updateConcert);
   app.delete('/concerts/:id', deleteConcert);
-  app.get('/concerts', searchConcerts); // Search concerts using query parameters
+  app.get('/concerts', authenticateToken, searchConcerts); // Search concerts using query parameters
 }
