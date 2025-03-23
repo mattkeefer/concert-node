@@ -11,7 +11,7 @@ const concertDao = {
 
   // Find a concert by its ID
   findConcertById: async (id) => {
-    return Concert.findById(id);
+    return Concert.findById(id).populate('attendingUsers').exec();
   },
 
   // Find a concert corresponding to the discovery concert id

@@ -85,16 +85,17 @@ const userDao = {
    */
   saveConcert: async (userId, concertId) => {
     try {
-      await Concert.findByIdAndUpdate(
+      const concert = await Concert.findByIdAndUpdate(
           concertId,
           {$addToSet: {attendingUsers: userId}},
           {new: true}
-      ).exec();
-      return await User.findByIdAndUpdate(
+      ).populate('attendingUsers').exec();
+      await User.findByIdAndUpdate(
           userId,
           {$addToSet: {savedConcerts: concertId}}, // Avoid duplicate entries
           {new: true}
       ).exec();
+      return concert;
     } catch (err) {
       throw new Error(`Error saving concert: ${err.message}`);
     }
@@ -108,16 +109,17 @@ const userDao = {
    */
   unsaveConcert: async (userId, concertId) => {
     try {
-      await Concert.findByIdAndUpdate(
+      const concert = await Concert.findByIdAndUpdate(
           concertId,
           {$pull: {attendingUsers: userId}},
           {new: true}
-      ).exec();
-      return await User.findByIdAndUpdate(
+      ).populate('attendingUsers').exec();
+      await User.findByIdAndUpdate(
           userId,
           {$pull: {savedConcerts: concertId}},
           {new: true}
       ).exec();
+      return concert;
     } catch (err) {
       throw new Error(`Error unsaving concert: ${err.message}`);
     }
