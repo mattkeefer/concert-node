@@ -70,12 +70,12 @@ export default function UserRoutes(app) {
       return;
     }
     try {
-      const updatedUser = await userDao.saveConcert(req.params.id,
+      const updatedConcert = await userDao.saveConcert(req.params.id,
           req.params.concertId);
-      if (!updatedUser) {
+      if (!updatedConcert) {
         return res.sendStatus(500);
       }
-      res.send(updatedUser);
+      res.send(updatedConcert);
     } catch (err) {
       res.status(500).send(err);
     }
@@ -87,12 +87,12 @@ export default function UserRoutes(app) {
       return;
     }
     try {
-      const updatedUser = await userDao.unsaveConcert(req.params.id,
+      const updatedConcert = await userDao.unsaveConcert(req.params.id,
           req.params.concertId);
-      if (!updatedUser) {
+      if (!updatedConcert) {
         return res.sendStatus(500);
       }
-      res.send(updatedUser);
+      res.send(updatedConcert);
     } catch (err) {
       res.status(500).send(err);
     }
