@@ -1,6 +1,6 @@
-import bcrypt from 'bcrypt';
-import User from './schema.js';
-import Concert from '../Concerts/schema.js';
+import bcrypt from "bcrypt";
+import User from "./schema.js";
+import Concert from "../Concerts/schema.js";
 
 const userDao = {
   /**
@@ -25,17 +25,17 @@ const userDao = {
    */
   findUserById: async (userId) => {
     return await User.findById(userId)
-    .populate('followers', '_id, firstName lastName username profilePicture')
-    .populate('following', '_id, firstName lastName username profilePicture')
-    .exec();
+      .populate("followers", "_id, firstName lastName username profilePicture")
+      .populate("following", "_id, firstName lastName username profilePicture")
+      .exec();
   },
 
   findUserByIdAndPopulateSavedConcerts: async (userId) => {
-    return await User.findById(userId).populate('savedConcerts').exec();
+    return await User.findById(userId).populate("savedConcerts").exec();
   },
 
   findUserFollowingById: async (userId) => {
-    return await User.findById(userId).select('following').lean().exec();
+    return await User.findById(userId).select("following").lean().exec();
   },
 
   /**
@@ -45,18 +45,18 @@ const userDao = {
    */
   findUserByUsername: async (username) => {
     try {
-      return await User.findOne({username}).exec();
+      return await User.findOne({ username }).exec();
     } catch (err) {
       throw new Error(`Error finding user by username: ${err.message}`);
     }
   },
 
   findUsersByQuery: async (query) => {
-    const {username} = query;
+    const { username } = query;
     const searchCriteria = {};
 
     if (username) {
-      searchCriteria.username = {$regex: username, $options: 'i'};
+      searchCriteria.username = { $regex: username, $options: "i" };
     }
 
     return User.find(searchCriteria);
@@ -70,8 +70,9 @@ const userDao = {
    */
   updateUser: async (userId, updateData) => {
     try {
-      return await User.findByIdAndUpdate(userId, updateData,
-          {new: true}).exec();
+      return await User.findByIdAndUpdate(userId, updateData, {
+        new: true,
+      }).exec();
     } catch (err) {
       throw new Error(`Error updating user: ${err.message}`);
     }
@@ -86,14 +87,16 @@ const userDao = {
   saveConcert: async (userId, concertId) => {
     try {
       const concert = await Concert.findByIdAndUpdate(
-          concertId,
-          {$addToSet: {attendingUsers: userId}},
-          {new: true}
-      ).populate('attendingUsers').exec();
+        concertId,
+        { $addToSet: { attendingUsers: userId } },
+        { new: true },
+      )
+        .populate("attendingUsers")
+        .exec();
       await User.findByIdAndUpdate(
-          userId,
-          {$addToSet: {savedConcerts: concertId}}, // Avoid duplicate entries
-          {new: true}
+        userId,
+        { $addToSet: { savedConcerts: concertId } }, // Avoid duplicate entries
+        { new: true },
       ).exec();
       return concert;
     } catch (err) {
@@ -110,14 +113,16 @@ const userDao = {
   unsaveConcert: async (userId, concertId) => {
     try {
       const concert = await Concert.findByIdAndUpdate(
-          concertId,
-          {$pull: {attendingUsers: userId}},
-          {new: true}
-      ).populate('attendingUsers').exec();
+        concertId,
+        { $pull: { attendingUsers: userId } },
+        { new: true },
+      )
+        .populate("attendingUsers")
+        .exec();
       await User.findByIdAndUpdate(
-          userId,
-          {$pull: {savedConcerts: concertId}},
-          {new: true}
+        userId,
+        { $pull: { savedConcerts: concertId } },
+        { new: true },
       ).exec();
       return concert;
     } catch (err) {
@@ -133,10 +138,12 @@ const userDao = {
    */
   followUser: async (userId, targetUserId) => {
     try {
-      await User.findByIdAndUpdate(userId,
-          {$addToSet: {following: targetUserId}}).exec();
-      await User.findByIdAndUpdate(targetUserId,
-          {$addToSet: {followers: userId}}).exec();
+      await User.findByIdAndUpdate(userId, {
+        $addToSet: { following: targetUserId },
+      }).exec();
+      await User.findByIdAndUpdate(targetUserId, {
+        $addToSet: { followers: userId },
+      }).exec();
     } catch (err) {
       throw new Error(`Error following user: ${err.message}`);
     }
@@ -150,10 +157,12 @@ const userDao = {
    */
   unfollowUser: async (userId, targetUserId) => {
     try {
-      await User.findByIdAndUpdate(userId,
-          {$pull: {following: targetUserId}}).exec();
-      await User.findByIdAndUpdate(targetUserId,
-          {$pull: {followers: userId}}).exec();
+      await User.findByIdAndUpdate(userId, {
+        $pull: { following: targetUserId },
+      }).exec();
+      await User.findByIdAndUpdate(targetUserId, {
+        $pull: { followers: userId },
+      }).exec();
     } catch (err) {
       throw new Error(`Error unfollowing user: ${err.message}`);
     }
@@ -161,12 +170,12 @@ const userDao = {
 
   // Register a new user
   registerUser: async (userData) => {
-    const {firstName, lastName, username, email, password} = userData;
+    const { firstName, lastName, username, email, password } = userData;
 
     // Check if email or username already exists
-    const existingUser = await User.findOne({$or: [{email}, {username}]});
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
-      throw new Error('Email or username already in use');
+      throw new Error("Email or username already in use");
     }
 
     // Hash the password
@@ -185,17 +194,17 @@ const userDao = {
   },
 
   // Login an existing user
-  loginUser: async ({email, password}) => {
+  loginUser: async ({ email, password }) => {
     // Find user by email
-    const user = await User.findOne({email});
+    const user = await User.findOne({ email });
     if (!user) {
-      throw new Error('Invalid email or password');
+      throw new Error("Invalid email or password");
     }
 
     // Check if the password matches
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new Error('Invalid email or password');
+      throw new Error("Invalid email or password");
     }
 
     return user;
