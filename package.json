@@ -1,9 +1,11 @@
 {
   "name": "concert-node",
+  "type": "module",
   "version": "1.0.0",
   "main": "App.js",
   "scripts": {
-    "start": "node App.js"
+    "build": "tsc",
+    "start": "node dist/server.js"
   },
   "author": "Matthew Keefer",
   "dependencies": {
@@ -20,5 +22,8 @@
     "mongodb": "^6.6.1",
     "mongoose": "^8.3.3"
   },
-  "type": "module"
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2"
+  }
 }

@@ -1,9 +1,8 @@
 import userDao from "./dao.js";
 import jwt from "jsonwebtoken";
-import {authenticateToken} from "../Auth/auth.js";
+import { authenticateToken } from "../Auth/auth.js";
 
 export default function UserRoutes(app) {
-
   const createUser = async (req, res) => {
     try {
       const user = await userDao.createUser(req.body);
@@ -40,17 +39,19 @@ export default function UserRoutes(app) {
   const getSavedConcertsForUser = async (req, res) => {
     try {
       const user = await userDao.findUserByIdAndPopulateSavedConcerts(
-          req.params.id);
+        req.params.id,
+      );
       if (!user) {
         res.sendStatus(404);
       }
       // Sort concerts chronologically
       res.send(
-          [...user.savedConcerts].sort((a, b) => a.startDate - b.startDate));
+        [...user.savedConcerts].sort((a, b) => a.startDate - b.startDate),
+      );
     } catch (err) {
       res.status(500).send(err);
     }
-  }
+  };
 
   const updateUser = async (req, res) => {
     try {
@@ -70,8 +71,10 @@ export default function UserRoutes(app) {
       return;
     }
     try {
-      const updatedConcert = await userDao.saveConcert(req.params.id,
-          req.params.concertId);
+      const updatedConcert = await userDao.saveConcert(
+        req.params.id,
+        req.params.concertId,
+      );
       if (!updatedConcert) {
         return res.sendStatus(500);
       }
@@ -87,8 +90,10 @@ export default function UserRoutes(app) {
       return;
     }
     try {
-      const updatedConcert = await userDao.unsaveConcert(req.params.id,
-          req.params.concertId);
+      const updatedConcert = await userDao.unsaveConcert(
+        req.params.id,
+        req.params.concertId,
+      );
       if (!updatedConcert) {
         return res.sendStatus(500);
       }
@@ -128,9 +133,10 @@ export default function UserRoutes(app) {
     try {
       const user = await userDao.registerUser(req.body);
       if (user) {
-        const token = jwt.sign({user}, process.env.JWT_SECRET,
-            {expiresIn: '1d'});
-        res.json({user, token});
+        const token = jwt.sign({ user }, process.env.JWT_SECRET, {
+          expiresIn: "1d",
+        });
+        res.json({ user, token });
       } else {
         res.sendStatus(500);
       }
@@ -143,9 +149,10 @@ export default function UserRoutes(app) {
     try {
       const user = await userDao.loginUser(req.body);
       if (user) {
-        const token = jwt.sign({user}, process.env.JWT_SECRET,
-            {expiresIn: '1d'});
-        res.json({user, token});
+        const token = jwt.sign({ user }, process.env.JWT_SECRET, {
+          expiresIn: "1d",
+        });
+        res.json({ user, token });
       } else {
         res.sendStatus(500);
       }
@@ -158,7 +165,7 @@ export default function UserRoutes(app) {
     const userId = req.params.userId;
     const user = await userDao.findUserById(userId);
     res.json(user);
-  }
+  };
 
   const searchUsers = async (req, res) => {
     try {
@@ -167,23 +174,31 @@ export default function UserRoutes(app) {
     } catch (err) {
       res.status(500).send(err);
     }
+  };
 
-  }
-
-  app.post('/users', createUser);
-  app.get('/users/:id', getUserById);
-  app.get('/users/:id/concerts', getSavedConcertsForUser);
-  app.get('/users/username/:username', getUserByUsername);
-  app.put('/users/:id', updateUser);
-  app.post('/users/:id/save-concert/:concertId', authenticateToken,
-      saveConcert);
-  app.post('/users/:id/unsave-concert/:concertId', authenticateToken,
-      unsaveConcert);
-  app.post('/users/:id/follow/:targetUserId', authenticateToken, followUser);
-  app.post('/users/:id/unfollow/:targetUserId', authenticateToken,
-      unfollowUser);
-  app.post('/users/register', register);
-  app.post('/users/login', login);
-  app.post('/users/profile/:userId', authenticateToken, profile);
-  app.get('/users', searchUsers);
+  app.post("/users", createUser);
+  app.get("/users/:id", getUserById);
+  app.get("/users/:id/concerts", getSavedConcertsForUser);
+  app.get("/users/username/:username", getUserByUsername);
+  app.put("/users/:id", updateUser);
+  app.post(
+    "/users/:id/save-concert/:concertId",
+    authenticateToken,
+    saveConcert,
+  );
+  app.post(
+    "/users/:id/unsave-concert/:concertId",
+    authenticateToken,
+    unsaveConcert,
+  );
+  app.post("/users/:id/follow/:targetUserId", authenticateToken, followUser);
+  app.post(
+    "/users/:id/unfollow/:targetUserId",
+    authenticateToken,
+    unfollowUser,
+  );
+  app.post("/users/register", register);
+  app.post("/users/login", login);
+  app.post("/users/profile/:userId", authenticateToken, profile);
+  app.get("/users", searchUsers);
 }
