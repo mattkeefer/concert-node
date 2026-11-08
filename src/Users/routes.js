@@ -1,6 +1,6 @@
 import userDao from "./dao.js";
 import jwt from "jsonwebtoken";
-import { authenticateToken } from "../Auth/auth.js";
+import { authenticateToken } from "../shared/auth.js";
 
 export default function UserRoutes(app) {
   const createUser = async (req, res) => {
